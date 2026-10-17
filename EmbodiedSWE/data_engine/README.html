@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>data_engine — README</title>
+<style>
+  :root {
+    --bg: #F5F8F8; --panel: #FFFFFF; --panel2: #ECF2F2;
+    --ink: #17252C; --mut: #4C5E68; --faint: #7E8E96; --line: #DDE6E7;
+    --acc: #0B6B70; --acc-ink: #095A5E; --acc-bg: #DFF0F0;
+    --good: #2E7C4B; --good-bg: #E3F2E9; --warn: #93660A; --warn-bg: #F7EFDB;
+    --code-bg: #EEF3F3;
+    --shadow: 0 1px 2px rgba(23,37,44,.05), 0 6px 18px rgba(23,37,44,.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0D1418; --panel: #151D22; --panel2: #1B252B;
+      --ink: #E6ECEF; --mut: #AAB8C0; --faint: #71818B; --line: #28343B;
+      --acc: #4EC3C9; --acc-ink: #7FD4D9; --acc-bg: #0F3237;
+      --good: #5FC084; --good-bg: #16301F; --warn: #DFA83E; --warn-bg: #322710;
+      --code-bg: #1B252B;
+      --shadow: 0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.25);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F5F8F8; --panel: #FFFFFF; --panel2: #ECF2F2;
+    --ink: #17252C; --mut: #4C5E68; --faint: #7E8E96; --line: #DDE6E7;
+    --acc: #0B6B70; --acc-ink: #095A5E; --acc-bg: #DFF0F0;
+    --good: #2E7C4B; --good-bg: #E3F2E9; --warn: #93660A; --warn-bg: #F7EFDB;
+    --code-bg: #EEF3F3;
+    --shadow: 0 1px 2px rgba(23,37,44,.05), 0 6px 18px rgba(23,37,44,.05);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1418; --panel: #151D22; --panel2: #1B252B;
+    --ink: #E6ECEF; --mut: #AAB8C0; --faint: #71818B; --line: #28343B;
+    --acc: #4EC3C9; --acc-ink: #7FD4D9; --acc-bg: #0F3237;
+    --good: #5FC084; --good-bg: #16301F; --warn: #DFA83E; --warn-bg: #322710;
+    --code-bg: #1B252B;
+    --shadow: 0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.25);
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  code, .mono, .num { font-family: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace; }
+  code { font-size: .84em; background: var(--code-bg); padding: .12em .4em; border-radius: 5px; }
+  a { color: var(--acc-ink); }
+  :focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; border-radius: 6px; }
+  h1, h2, h3 { text-wrap: balance; line-height: 1.25; margin: 0; }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- header ---------- */
+  header { padding: 48px 0 24px; }
+  .eyebrow { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--acc-ink); margin: 0 0 12px; }
+  header h1 { font-size: clamp(26px, 4vw, 32px); font-weight: 750; letter-spacing: -.025em; }
+
+  /* ---------- tab bar ---------- */
+  nav.bar { position: sticky; top: 0; z-index: 10; background: var(--bg);
+    border-bottom: 1px solid var(--line); }
+  nav.bar .row { display: flex; gap: 6px; overflow-x: auto; padding: 10px 0; }
+  nav.bar a { flex: none; display: flex; gap: 8px; align-items: baseline; text-decoration: none;
+    color: var(--mut); font-size: 14px; font-weight: 550; padding: 7px 15px; border-radius: 999px; }
+  nav.bar a .num { font-size: 11px; color: var(--faint); font-weight: 650; }
+  nav.bar a:hover { background: var(--panel2); color: var(--ink); }
+  nav.bar a.on { background: var(--acc-bg); color: var(--acc-ink); font-weight: 650;
+    box-shadow: inset 0 0 0 1.5px var(--acc); }
+  nav.bar a.on .num { color: var(--acc-ink); }
+
+  /* ---------- sections (tab panels) ---------- */
+  main { padding-bottom: 48px; }
+  section { padding: 34px 0 8px; }
+  section[hidden] { display: none; }
+  @media (prefers-reduced-motion: no-preference) {
+    section { animation: rise .22s ease; }
+    @keyframes rise { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  }
+  h2 { font-size: 24px; font-weight: 720; letter-spacing: -.02em;
+       display: flex; gap: 12px; align-items: center; }
+  h2 .num { font-size: 12px; font-weight: 650; color: var(--acc-ink); background: var(--acc-bg);
+            padding: 3px 9px; border-radius: 7px; letter-spacing: .05em; }
+  .lede { color: var(--mut); font-size: 17px; margin: 14px 0 20px; }
+  .lede b { color: var(--acc-ink); font-weight: 650; }
+  h3 { font-size: 14px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase;
+       color: var(--ink); margin: 34px 0 14px; display: flex; align-items: center; gap: 10px; }
+  h3::before { content: ""; flex: none; width: 18px; height: 4px; border-radius: 2px; background: var(--acc); }
+  h3::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  h4 { font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+       color: var(--mut); margin: 24px 0 10px 8px; line-height: 1.25;
+       display: flex; align-items: center; gap: 9px; }
+  h4::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%;
+       background: var(--acc); opacity: .75; }
+  p { margin: 0 0 12px; }
+  .note { color: var(--mut); font-size: 13.5px; margin: 10px 0 16px; }
+  ul.tight { margin: 0 0 16px; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+  ul.tight li::marker { color: var(--acc); }
+  .cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 12px 32px; margin-bottom: 16px; }
+
+  /* ---------- procedure strip (auto-numbered) ---------- */
+  .pipe { display: flex; align-items: stretch; overflow-x: auto; margin: 6px 0 16px;
+          border: 1px solid var(--line); border-radius: 14px; background: var(--panel);
+          box-shadow: var(--shadow); counter-reset: step; }
+  .pipe .step { flex: 1 1 0; min-width: 150px; padding: 14px 16px;
+                border-right: 1px solid var(--line); counter-increment: step; }
+  .pipe .step:last-child { border-right: 0; }
+  .pipe .step b { display: block; font-size: 14.5px; font-weight: 650; margin-bottom: 4px; }
+  .pipe .step b::before { content: counter(step); font-family: ui-monospace, Consolas, monospace;
+    font-size: 11px; font-weight: 700; color: var(--acc-ink); background: var(--acc-bg);
+    border-radius: 6px; padding: 1px 7px; margin-right: 8px; vertical-align: 2px; }
+  .pipe .step span { display: block; color: var(--mut); font-size: 13px; line-height: 1.55; }
+  .pipe .step.hot { background: linear-gradient(180deg, var(--acc-bg), transparent 160%); }
+  .pipe .step.hot b { color: var(--acc-ink); }
+  .pipe .step .freq { display: block; font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-bottom: 7px; }
+  .pipe .step.hot .freq { color: var(--acc-ink); opacity: .8; }
+  .pipe .step.open b, .pipe .step.open span { opacity: .6; }
+  .pipe .step.open .freq { color: var(--warn); opacity: 1; }
+
+  /* ---------- lifecycle timeline ---------- */
+  .flow { list-style: none; margin: 10px 0 20px; padding: 0; position: relative;
+          display: flex; flex-direction: column; gap: 14px; }
+  .flow::before { content: ""; position: absolute; left: 20px; top: 14px; bottom: 14px;
+                  width: 2px; background: var(--line); }
+  .flow li { display: flex; gap: 18px; align-items: flex-start; }
+  .flow .dot { position: relative; z-index: 1; flex: none; width: 42px; height: 42px;
+               border-radius: 50%; display: grid; place-items: center;
+               font-family: ui-monospace, Consolas, monospace; font-size: 15px; font-weight: 700;
+               background: var(--panel); color: var(--faint); border: 2px solid var(--line); }
+  .flow li.hot .dot { background: var(--acc-bg); color: var(--acc-ink); border-color: var(--acc); }
+  .flow li.open .dot { border-style: dashed; border-color: var(--warn); color: var(--warn); }
+  .flow .card { flex: 1; background: var(--panel); border: 1px solid var(--line);
+                border-radius: 14px; padding: 14px 18px; box-shadow: var(--shadow); }
+  .flow li.hot .card { border-color: var(--acc); }
+  .flow li.open .card { border-style: dashed; }
+  .flow .card .freq { display: block; font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint);
+    margin-bottom: 4px; }
+  .flow li.hot .card .freq { color: var(--acc-ink); }
+  .flow li.open .card .freq { color: var(--warn); }
+  .flow .card b { display: block; font-size: 16px; font-weight: 680; margin-bottom: 4px; }
+  .flow li.hot .card b { color: var(--acc-ink); }
+  .flow .card p { margin: 0; color: var(--mut); font-size: 14px; line-height: 1.6; }
+  .flow li.open .card p, .flow li.open .card b { opacity: .75; }
+
+  /* ---------- fact cards ---------- */
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+           gap: 12px; margin: 0 0 18px; }
+  .fact { background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+          padding: 16px 18px; font-size: 14.5px; color: var(--mut); box-shadow: var(--shadow); }
+  .fact b { display: block; color: var(--ink); font-size: 15.5px; margin-bottom: 5px; }
+
+  /* ---------- tables ---------- */
+  .twrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px;
+           background: var(--panel); margin: 0 0 16px; box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-size: 11.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint);
+       background: var(--panel2); font-weight: 700; white-space: nowrap; }
+  td.name { font-weight: 650; white-space: nowrap; }
+  td.t { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--mut); }
+
+  /* ---------- code / tree blocks ---------- */
+  .block { background: var(--code-bg); border: 1px solid var(--line); border-radius: 12px;
+           padding: 16px 20px; overflow-x: auto; margin: 0 0 16px; white-space: pre;
+           font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 13px; line-height: 1.9; }
+  .block i { color: var(--mut); font-style: normal; }
+  .block b { color: var(--acc-ink); font-weight: 650; }
+  .block .x { color: var(--faint); }
+
+  /* ---------- pills ---------- */
+  .pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px;
+          font-weight: 650; letter-spacing: .02em; white-space: nowrap; }
+  .pill.done { background: var(--good-bg); color: var(--good); }
+  .pill.tbd  { background: var(--warn-bg); color: var(--warn); }
+  .pill.dim  { background: var(--panel2); color: var(--mut); }
+
+  /* ---------- mount map ---------- */
+  .mount { display: grid; grid-template-columns: minmax(0,1fr) 46px minmax(0,1.15fr); gap: 5px 8px;
+           align-items: baseline; font-family: ui-monospace, "SF Mono", Consolas, monospace;
+           font-size: 13px; border: 1px solid var(--line); border-radius: 12px;
+           background: var(--panel); padding: 14px 18px; margin: 0 0 16px; overflow-x: auto;
+           box-shadow: var(--shadow); }
+  .mount .h { text-align: right; color: var(--mut); }
+  .mount .a { text-align: center; color: var(--acc-ink); font-weight: 700; }
+  .mount .c b { color: var(--acc-ink); }
+  .mount .c span { color: var(--mut); }
+  .mount .full { grid-column: 1 / -1; color: var(--faint); font-family: system-ui, sans-serif;
+                 font-size: 12.5px; text-align: center; padding-top: 8px; border-top: 1px dashed var(--line); margin-top: 8px; }
+
+  footer { color: var(--faint); font-size: 13px; padding: 26px 0 60px; }
+
+  @media (max-width: 640px) {
+    header { padding-top: 30px; }
+    .pipe { flex-direction: column; }
+    .pipe .step { border-right: 0; border-bottom: 1px solid var(--line); }
+    .pipe .step:last-child { border-bottom: 0; }
+    .mount { grid-template-columns: 1fr; }
+    .mount .h { text-align: left; }
+    .mount .a { text-align: left; }
+    .mount .c { margin-bottom: 6px; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">CoSiGen · robobench · data_engine</p>
+    <h1>Turn one solved benchmark into a verified demonstration dataset</h1>
+  </header>
+</div>
+
+<nav class="bar" aria-label="Sections">
+  <div class="wrap">
+    <div class="row">
+      <a href="#overview"><span class="num">01</span>Overview</a>
+      <a href="#quickstart"><span class="num">02</span>Quick start</a>
+      <a href="#levels"><span class="num">03</span>Diversification levels</a>
+      <a href="#generate"><span class="num">04</span>Generating data</a>
+      <a href="#replay"><span class="num">05</span>Replay &amp; export</a>
+      <a href="#todo"><span class="num">06</span>TODO</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <main>
+
+    <!-- 01 OVERVIEW ---------------------------------------------------- -->
+    <section id="overview">
+      <h2><span class="num">01</span>Overview</h2>
+      <p class="lede">A coding agent solves a robobench task once. The data engine multiplies that single verified solve into a <b>large, diverse, per-episode-verified demonstration dataset</b>.</p>
+      <p>Three decoupled stages: <b>diversify</b> — agents write the code that adds diversity (scenes, strategies, phases, resets); <b>generate</b> — one generic launcher mass-produces batched episodes from whatever is authored; <b>verify</b> — the scene's grader stamps a verdict on every episode. Verification is also the <b>feedback on the code</b>: agents test-launch small batches mid-session, and each batch's success rate is documented — informing further authoring and repair.</p>
+
+      <h3>Hierarchical diversification</h3>
+      <p>The engine diversifies the <b>scene</b> and the <b>solve</b> along a hierarchy where each level contains the next: one scene hosts many strategies; each strategy breaks into phases, re-enterable from many sampled states; dynamics perturb every rollout; every rollout re-renders visually. <b>Each level can be run independently</b> — none is mandatory, none waits on another, and the downstream experiment picks the subset it needs.</p>
+
+      <div class="twrap"><table>
+        <thead><tr><th>level</th><th>what varies</th><th>diversity</th><th>agent involvement</th></tr></thead>
+        <tbody>
+          <tr><td class="name">L1 · scene</td><td>the world: distractor objects, more target objects, layout</td><td>world</td><td class="t">heavy</td></tr>
+          <tr><td class="name">L2 · strategy</td><td>the plan: grasp site, subtask order, arm roles, timing, preferences</td><td>behavior</td><td class="t">heavy</td></tr>
+          <tr><td class="name">L3 · phase</td><td>where each phase starts: checkpoints + perturbed re-entry</td><td>state coverage</td><td class="t">light</td></tr>
+          <tr><td class="name">L4 · dynamics</td><td>action noise; physical parameters: friction, mass, etc.</td><td>recovery</td><td class="t">none</td></tr>
+          <tr><td class="name">L5 · visual</td><td>pixels only: lighting, textures, background, camera</td><td>appearance</td><td class="t">none</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Example of layout</h3>
+      <p>Each <code>data_gen/</code> rides alongside one successful eval run: the solution and grader next to it <em>are</em> the reference.</p>
+      <div class="block">experiments/&lt;exp&gt;/runs/&lt;run_name&gt;/
+├─ task/  workspace/  run.json …   <i>the eval run as-is — solution + grader, in place, untouched</i>
+└─ data_gen/
+    └─ &lt;gen_name&gt;/                 <i>one named generation campaign — several can coexist</i>
+        ├─ scenes/                 <i>the generators — code only, laid out below</i>
+        └─ data/                   <i>raw trajectories only — one folder per batch, append-only</i>
+            ├─ &lt;batch_1&gt;/          <i>a nominal batch (no noise, no sampling) makes a good first one: the baseline other batches' yields are read against</i>
+            │   ├─ ep_0000/
+            │   │   ├─ traj.npz    <i>state/action arrays at control rate</i>
+            │   │   ├─ meta.json   <i>lineage (scene · strategy · phase · noise · seed) + verdict + sampled parameters</i>
+            │   │   └─ imgs/       <i>optional — frames rendered from the states on demand</i>
+            │   ├─ ep_0001/
+            │   └─ meta.json       <i>batch meta: config, seeds, the scene's band specs + per-env draws, yield + failure-mode summary</i>
+            └─ &lt;batch_2&gt;/
+
+scenes/
+├─ .agent/                         <i>scene-session ledgers: &lt;ts&gt;_scene/ {instructions.md, condition.yaml, transcript}</i>
+├─ scene_0/                        <i>the unmodified benchmark scene — the nominal control</i>
+│   ├─ SUMMARY.md                  <i>this cell's record: what changed, why, measured yields</i>
+│   ├─ meta.json                   <i>metadata: episodes generated, success rate, …</i>
+│   ├─ scene/
+│   │   └─ scene.py                <i>full standalone scene — repo suite copy, edited; its PHYSICAL_PARAMS bands (friction, mass, …) ARE the L4 sampling declaration, applied per env by generate automatically</i>
+│   ├─ grader/
+│   │   └─ grader.py               <i>the grader this scene's episodes are verified with — the suite's, modified to match the scene changes</i>
+│   └─ strategies/
+│       ├─ .agent/                 <i>strategy-session ledgers (&lt;ts&gt;_strategy/)</i>
+│       ├─ strategy_0/
+│       │   ├─ SUMMARY.md          <i>this cell's record</i>
+│       │   ├─ meta.json           <i>metadata: episodes generated, success rate, …</i>
+│       │   ├─ solve.py            <i>the solve as delivered — never modified</i>
+│       │   └─ phases/            <i>optional — created by an L3 session (its ledger in phases/.agent/); until then the solve runs from the scene's own reset</i>
+│       │       ├─ phase_0/        <i>ONE proposal of how to divide/enter the solve — self-contained</i>
+│       │       │   ├─ SUMMARY.md  <i>this cell's record: the division proposed, entries rejected and why, measured yields</i>
+│       │       │   ├─ solve_by_phase.py  <i>this cell's port: enters at any phase of the division, runs to task-done (solve.py never modified)</i>
+│       │       │   ├─ reset/      <i>one file PER PHASE, named exactly as the phase — each batch sweeps all the files, one rollout per file; a file chooses the entry AND builds its state via reset_0(env), reset_1(env), … (all applied, envs divided evenly among them)</i>
+│       │       │   └─ meta.json   <i>metadata: episodes generated, success rate, …</i>
+│       │       ├─ phase_1/        <i>a different division/entry proposal — may carry its own port</i>
+│       │       └─ phase_2/
+│       └─ strategy_1/
+├─ scene_1/
+└─ scene_2/</div>
+
+    </section>
+
+
+    <!-- 02 LEVELS ------------------------------------------------------ -->
+    <!-- 02 QUICKSTART ---------------------------------------------------- -->
+    <section id="quickstart" hidden>
+      <h2><span class="num">02</span>Quick start</h2>
+      <p class="note">TODO — to be written.</p>
+    </section>
+
+    <section id="levels" hidden>
+      <h2><span class="num">03</span>Diversification levels</h2>
+      <p class="lede">One subsection per level of the hierarchy — the rules, the examples, and the checks each level runs at acceptance.</p>
+
+      <h3>L1 · scene</h3>
+      <p><b>Gentle modifications of the world</b> — editing the scene code, optionally the configs and grader; parts that need dedicated expert checks stay untouched. In scope: <b>irrelevant objects</b> (an apple beside the bulb — collision-safe placement, assets from the prebuilt pipeline); <b>the work surface</b> (a different table height or condition, or a more task-suited table). Where a change shifts what success looks like, the scene's <b>check functions and grader are rewritten to match</b>. <b>Out of scope for now</b>: the hard parts — thread mechanics, physics config, and mechanisms like the weld gate stay as the suite ships them.</p>
+
+      <h3>L2 · strategy</h3>
+      <p><b>A strategy is a way to do the task, delivered in its <code>solve.py</code></b>, usually separated into several phases, e.g. pick → place → thread. It varies at three grains: <b>parameters</b> of the solve, e.g. forces, speeds, clearances, named as UPPERCASE constants at the top of <code>solve.py</code> (the file's values are the nominal), optionally banded in a <code>SOLVE_PARAMS</code> dict beside them (mirroring the scene's <code>PHYSICAL_PARAMS</code>) — <code>generate</code> draws ONE set per batch and writes it onto the module before calling <code>solve(env)</code>, whose signature never changes; <b>small modifications</b>, e.g. execution order where several are valid, preference choices, grasp site; <b>big changes</b>: a genuinely new way to solve the task, e.g. assembling a table with two arms, one strategy has a single arm do the assembly while the other only reorients the table; a new strategy hands the leg over and both arms thread.</p>
+
+      <h3>L3 · phase</h3>
+      <p><b>Once a strategy is finished, each of its phases becomes an entry point</b>: the strategy's <code>solve.py</code> enters there and runs to task-done, and the phase's reset conditions (<code>reset/&lt;name&gt;.py</code>) propose what the entry state looks like, e.g. restore a recorded mid-task state and jitter it, relocate a free object alone, or move a grasped object rigidly together with the hand. Phases are <b>established, not assumed</b>: init bakes no <code>phases/</code> folder at all — the solve as delivered runs unmodified from the scene's own reset, whatever its shape. An L3 agent session creates phase cells (<code>phases/phase_N/</code>), each a self-contained proposal of how to divide and enter the solve, carrying its own <code>solve_by_phase.py</code> — <code>solve.py</code> itself is never modified — accepted only if the phase's test batch yields.</p>
+
+      <h3>L4 · dynamics</h3>
+      <p><b>Random perturbations to actions and physical parameters</b>, e.g. actuation noise, friction, mass. The solve's own feedback control mitigates them, and that recovery behavior is what gets recorded: the perturbed action is executed, the clean action is the label. No agent involved, just batched solves.</p>
+
+      <h3>L5 · visual</h3>
+      <p><b>Generic, cheap, and free of physics</b>: once a trajectory is solved and recorded, replaying its states lets visual changes apply without affecting the dynamics, e.g. camera position, textures, lighting, background. Each variant costs render time only, and it works retroactively on every episode ever recorded.</p>
+    </section>
+
+    <!-- 03 GENERATE ------------------------------------------------------ -->
+    <section id="generate" hidden>
+      <h2><span class="num">04</span>Generating data</h2>
+      <p class="lede">Generation takes a <b>scene</b> and a <b>solver</b> (strategy + phase entry) and turns them into many trajectories — one generic launcher, batched rollouts, every episode graded, and the scene's <code>PHYSICAL_PARAMS</code> bands sampled automatically: one world per env, env 0 nominal. No task-specific logic anywhere in the launcher.</p>
+
+      <p class="note">TODO — sections to be rewritten: init, sampling, batch flow, runner &amp; solver, properties.</p>
+
+    </section>
+
+
+    <!-- 05 REPLAY & EXPORT --------------------------------------------- -->
+    <section id="replay" hidden>
+      <h2><span class="num">05</span>Replay &amp; export</h2>
+      <p class="lede">L5 in practice: recorded states re-render to <b>RGB frames</b> without touching the dynamics — retroactively, on every episode ever recorded — then pack into a <b>LeRobotDataset</b> for VLA training.</p>
+
+      <h3>Render (scripts/render.py — boots Isaac)</h3>
+      <div class="block">.venv/bin/python data_engine/scripts/render.py --headless \
+    &lt;…/data_gen/&lt;gen_name&gt;&gt; --batches bf_scene3</div>
+      <p class="note">That is the whole normal run — the defaults (8 parallel envs, one frame per control latch, 640×480, every camera the scene and robot declare) are what a dataset render uses. Everything tunable is in the args table below.</p>
+      <p class="note">Generation records states only — rendering stays a separate, retroactive pass (any batch, any time, any camera). For convenience the two chain: <code>generate.py --render [--render_args "…"]</code> replays the freshly graded batch in its own process.</p>
+      <p>Kinematic replay: the env rebuilds from the cell's <b>local scene</b> (exactly like <code>generate</code>), then every rendered frame is a restored recorded state — <code>env.set_states</code> on <code>num_envs</code> episodes at once, one <b>TiledCamera</b> pass rendering all of them together (that is where the parallelism lives). Physics decides nothing. The scene's <code>post_step</code> runs on each restored state <em>before</em> the render, so state-coupled visuals — the bulb's glow — land in the correct frame. Episodes recorded on any env grid replay anywhere: positions shift onto the replay slots, anchored on the deterministic robot base.</p>
+      <ul class="tight">
+        <li><b>Outputs, per (episode, view)</b>: <code>imgs/&lt;view&gt;/frame_%06d.jpg</code> (the dataset frames — the layout's <code>imgs/</code> slot), <code>imgs/render_&lt;view&gt;.json</code> (frame indices + the <em>actual</em> per-episode camera + joint names + visual draw: the export contract, per view so several views/looks coexist), <code>imgs/preview_&lt;view&gt;.mp4</code> (time-lapsed, for eyeballing). Per batch: <code>replay_sheet_&lt;view&gt;.png</code>, an episodes × time contact grid.</li>
+        <li><b>Cameras are declared, not flag defaults</b>: the scene's <code>CAMERAS</code> are external views (eye/target env-origin-relative on the work surface — viewpoint knowledge authored next to the geometry it frames), the robot's <code>CAMERAS</code> are ego views (a <code>link</code> key mounts the camera on that body — it rides the link through the replayed motion; embodiment knowledge). All declared views render <em>simultaneously</em>, one TiledCamera each, in the same pass. Per-view <code>bands</code> randomize the pose with the engine's sampling grammar on <code>{eye,target}_{x,y,z}</code> (nominal = the declared value): drawn <b>per episode</b> (Halton on the episode's run position), applied before the chunk's warmup, frozen for the episode — every episode gets its own fixed, reproducible camera, stamped into its <code>render_&lt;view&gt;.json</code>.</li>
+        <li><b>The renderer has state of its own</b> ("visual cache"): the RTX temporal denoiser accumulates across frames, so teleports leave ghost trails and a fresh boot renders its first frames dark. <code>--warmup</code> (default 12) burns throwaway renders at every chunk start. And Kit shows what PhysX had at its <em>last step</em> — the one <code>sim.step(render=True)</code> per frame is what carries restored transforms into the renderer.</li>
+        <li><b>Visual diversification is scene-owned</b>, mirroring L4's world physics: the cell's scene.py declares <code>VISUAL_PARAMS</code> bands (same distribution grammar as <code>PHYSICAL_PARAMS</code>, the cfg default = the nominal look) — one file, next to the knowledge that justifies the ranges, and the L1 agent authors it with the rest of the cell. <code>--visual_draw k</code> samples the bands at Halton index k into <b>one stage-wide look per render pass</b> (lights and ground are shared prims, so a pass can't mix looks); K looks of the same episodes = K runs, kept apart with distinct <code>--cam</code> names, and the draw + values are recorded into <code>render_&lt;cam&gt;.json</code>. The draw applies at <b>both moments, so knobs need no tags</b>: values are written onto the scene cfg <em>before</em> the build — build-consumed fields (a table preset, a backdrop usd) take effect there with zero extra code — then handed to <code>scene.apply_visual_params(env, values)</code> <em>after</em> it for the live subset (light/texture attribute writes, material rebinds; a knob with no branch there already did its work at build). For looks that don't band-ify there is the escape hatch: <code>--visual file.py</code> with <code>setup(env)</code> (once, after the build and after the banded look) and <code>per_frame(env, t)</code> (before each rendered frame).</li>
+        <li>One scene per process; inputs spanning several scene cells split into one subprocess per scene automatically.</li>
+      </ul>
+
+      <h3>One standalone robot per frame — Isaac has no true parallel rendering</h3>
+      <p>Unlike Genesis, MJX + Madrona, or ManiSkill — which batch-render N <em>independent</em> worlds — Omniverse RTX renders <b>one shared USD stage</b>: a <code>TiledCamera</code> is a single render product packing N viewpoints of that same stage, so every camera sees every environment. This is a documented limitation, still current (verified 2026-08): the TiledCamera docs note the camera renders all other parallel environments into the image (IsaacLab PR #1246), and the request for per-env-only rendering (<a href="https://github.com/isaac-sim/IsaacLab/issues/4021">issue #4021</a>, Nov 2025) closed with no supported feature — USD visibility is stage-global, not per-camera.</p>
+      <p>The standard fix — used by NVIDIA's own image pipelines — is <b>geometric</b>: keep every neighbor beyond the camera's far clip plane, where geometry is discarded before rasterization. Zero neighbor pixels can render, which is pixel-identical to independent worlds, at full tiled-rendering speed. In the wild: <a href="https://github.com/NVlabs/DEXTRAH">DEXTRAH</a> runs <code>clipping_range=(0.01, 2.0)</code> at <code>env_spacing=2.0</code>; <a href="https://github.com/NVlabs/GR00T-VisualSim2Real">GR00T-VisualSim2Real</a> runs <code>(0.1, 20.0)</code> at <code>env_spacing: 20</code>.</p>
+      <ul class="tight">
+        <li>Here: <code>--env-spacing</code> (default <b>50 m</b>) &gt; far clip (<b>40 m</b>) — a 10 m margin, so isolation holds for any camera pose, not just cameras centered in their cell. Replay owns its grid (recorded states shift onto the replay origins), so the spacing costs nothing.</li>
+        <li>The shared ground plane is auto-enlarged to grid extent + far-clip margin, or far-flung envs would float over sky.</li>
+        <li>Side effect: the background beyond 40 m is dome-light sky (a plain horizon line) — the same look DEXTRAH/GR00T training images have. A richer backdrop is a per-env asset (an L1 scene edit or the <code>--visual</code> hook), not a renderer setting.</li>
+        <li>Setting <code>--env-spacing</code> at or below the far clip prints a warning and neighbors reappear — the true-isolation alternative (one env per process) costs a ~90 s Kit boot per episode and loses the tiling.</li>
+      </ul>
+
+      <h4>render.py arguments</h4>
+      <div class="twrap"><table>
+        <thead><tr><th>arg</th><th>default</th><th>what it does</th></tr></thead>
+        <tbody>
+          <tr><td class="name">gen_root</td><td class="t">—</td><td>the campaign dir (<code>…/data_gen/&lt;gen_name&gt;</code>); episodes, scene code, and the robot preset are all found from here</td></tr>
+          <tr><td class="name">--batches</td><td class="t">all</td><td>batch folders under <code>data/</code> to replay</td></tr>
+          <tr><td class="name">--episodes</td><td class="t">—</td><td>explicit <code>ep_NNNN/</code> dirs instead (overrides <code>--batches</code>; also how the dispatcher hands a scene group to its worker)</td></tr>
+          <tr><td class="name">--num_envs</td><td class="t">8</td><td>episodes replayed simultaneously — one per env slot, one tiled render pass; the throughput knob (VRAM-bound)</td></tr>
+          <tr><td class="name">--fps</td><td class="t">control rate</td><td>output frame rate in sim time; default = the batch's recorded control rate (sim_dt × decimation from meta.json) = one frame per latch, the matched regime for VLA export. Pass a value to subsample (e.g. 30 on a 240 Hz batch = every 8th row); the achieved rate is stamped as the contract's fps</td></tr>
+          <tr><td class="name">--size</td><td class="t">640 480</td><td>image width height</td></tr>
+          <tr><td class="name">--cams</td><td class="t">all declared</td><td>which declared cameras to render, by name (the scene's + the robot's <code>CAMERAS</code>)</td></tr>
+          <tr><td class="name">--eye / --target</td><td class="t">—</td><td>a one-time <b>ad-hoc</b> camera (position and look-at, env-origin-relative on the work surface, <code>surface_z</code> added automatically) — for probing a viewpoint before writing it into the scene's <code>CAMERAS</code></td></tr>
+          <tr><td class="name">--focal</td><td class="t">16</td><td>the ad-hoc camera's focal length, USD mm: 24 ≈ 47° hFOV, 16 ≈ 66° (declared views carry their own)</td></tr>
+          <tr><td class="name">--cam</td><td class="t">cam</td><td>the ad-hoc camera's name → its frames land in <code>imgs/&lt;name&gt;/</code> beside the declared views'</td></tr>
+          <tr><td class="name">--env-spacing</td><td class="t">50</td><td>replay grid spacing; kept above the 40 m far clip so each frame shows only its own robot (warns if set at/below it)</td></tr>
+          <tr><td class="name">--warmup</td><td class="t">12</td><td>throwaway renders per chunk start — flushes the RTX temporal denoiser (first frames otherwise dark/ghosted)</td></tr>
+          <tr><td class="name">--no-frames</td><td class="t">off</td><td>skip the per-frame jpgs (previews only; export needs frames)</td></tr>
+          <tr><td class="name">--no-preview</td><td class="t">off</td><td>skip the per-episode <code>preview.mp4</code></td></tr>
+          <tr><td class="name">--preview-speed</td><td class="t">6</td><td>preview plays N× faster than sim time</td></tr>
+          <tr><td class="name">--no-sheet</td><td class="t">off</td><td>skip the per-batch <code>replay_sheet.png</code> contact grid</td></tr>
+          <tr><td class="name">--crf</td><td class="t">26</td><td>x264 quality for the preview (lower = better/bigger)</td></tr>
+          <tr><td class="name">--max-frames</td><td class="t">0 = all</td><td>debug cap on frames per episode — makes 2-minute smoke tests possible</td></tr>
+          <tr><td class="name">--visual_draw</td><td class="t">— (nominal)</td><td>sample the scene's own <code>VISUAL_PARAMS</code> bands at this index and apply the look stage-wide for the whole pass; omit = the nominal look (the cfg defaults); recorded in <code>render_&lt;cam&gt;.json</code></td></tr>
+          <tr><td class="name">--visual</td><td class="t">—</td><td>escape-hatch diversify hook: py file with <code>setup(env)</code> (once, after the build) and <code>per_frame(env, t)</code> (before each rendered frame); recorded in <code>render.json</code></td></tr>
+          <tr><td class="name">--headless …</td><td class="t">—</td><td>standard isaaclab AppLauncher flags; <code>--enable_cameras</code> is forced on</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Export (scripts/export_lerobot.py — no Isaac)</h3>
+      <div class="block">~/Documents/Research/lerobot/.venv/bin/python data_engine/scripts/export_lerobot.py \
+    &lt;…/data_gen/&lt;gen_name&gt;&gt; --repo-id cosigen/bulb_franka_osc --task "…"</div>
+      <p>The exporter runs in the LeRobot/openpi environment, not the Isaac environment. It reads verified episode metadata, <code>traj.npz</code>, rendered frames, and each <code>render_&lt;view&gt;.json</code> frame-index contract. The current pi0.5 schema uses the first rendered non-ego view as <code>image</code>, the first link-mounted view as <code>wrist_image</code>, eight joint-state values, seven action values, and the required <code>--task</code> instruction. Every visual draw directory (<code>imgs/</code>, <code>imgs_drawN/</code>) becomes a separate dataset episode over the same verified motion. Failed episodes are skipped unless explicitly included.</p>
+
+      <h4>export_lerobot.py arguments</h4>
+      <div class="twrap"><table>
+        <thead><tr><th>arg</th><th>default</th><th>what it does</th></tr></thead>
+        <tbody>
+          <tr><td class="name">gen_root</td><td class="t">—</td><td>the campaign dir, same as render.py's</td></tr>
+          <tr><td class="name">--repo-id</td><td class="t">required</td><td>dataset id, e.g. <code>cosigen/bulb_franka_osc</code></td></tr>
+          <tr><td class="name">--task</td><td class="t">required</td><td>language instruction stored on every frame</td></tr>
+          <tr><td class="name">--include-failures</td><td class="t">off</td><td>keep episodes whose grader verdict was failure (skipped by default)</td></tr>
+          <tr><td class="name">--include-diagnostics</td><td class="t">off</td><td>also include nominal, probe, and agent-session test batches (excluded from the dataset by default)</td></tr>
+          <tr><td class="name">--allow-partial-render</td><td class="t">off</td><td>permit export before the visual stage's completion marker exists</td></tr>
+          <tr><td class="name">--state-indices / --action-indices</td><td class="t">unset</td><td>explicit mappings required when source vectors do not exactly match the schema's 8-D state / 7-D action</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Chaining from generation: <code>generate.py --render</code> runs render.py on the fresh batch after grading, and <code>--render_args "…"</code> forwards any of the render flags above.</p>
+    </section>
+
+    <!-- 06 TODO ------------------------------------------------------ -->
+    <section id="todo" hidden>
+      <h2><span class="num">06</span>TODO</h2>
+
+      <h3>Propagate the recorded control law into the exported dataset</h3>
+      <p>DONE gen-side (2026-08-18): each episode's <code>meta.json</code> now carries a <code>controller</code> block captured <em>after</em> the solve ran — per controller leaf its class, <code>control_period</code>, cfg (pos/rot scale, ema_factor, …) and the live <code>kp</code>/<code>kd</code> overrides, plus the articulation's per-joint drive stiffness/damping (the solve's setup writes — <code>osc._kp</code>, gripper stiffness 8000 — live nowhere else). The dataset's <code>action</code> only means anything under that law, and the block is what keeps episodes from different controllers (other presets, real teleop in a sim/real pool) distinguishable. Remaining: export should copy the block into the dataset's metadata and refuse (or partition) episodes whose controller blocks differ — today it only checks action dims. Batches generated earlier lack the block.</p>
+
+      <h3>Language descriptions in the generated data</h3>
+      <p>Study eval's <b>checkpoint tree</b> (<code>eval/prompts/tools/checkpoint_tree.md</code>, the <code>cosigen-checkpoint-tree</code> skill): every saved node carries natural-language annotations — the state reached, the action attempted, measured notes, plus computed state diffs. Generated episodes carry none of that today. Work out how data gen attaches language to what it records (per-episode and per-phase descriptions, sourced from the solve's visible phases and checkpoint-tree-style annotation), so the dataset can feed language-conditioned training without a separate labeling pass.</p>
+
+      <h3>Unify solver-parameter generation with eval's parameter search</h3>
+      <p>eval already tunes solve constants: <code>eval/tools/parameter_search.py</code> (the <code>cosigen-parameter-optimize</code> skill) runs CMA-ES over a <code>space={"NAME": (lo, hi)}</code> declaration with per-env parameter arrays in ~512 parallel envs. The engine's <code>SOLVE_PARAMS</code> draws one set per batch from hand-set bands over the same kind of constants. Study unifying the two: shared constant names and space/band declaration, and the search's converged region as the evidence that sets <code>SOLVE_PARAMS</code> bands — search finds the safe region, generation samples inside it.</p>
+
+      <h3>Generate batches across machines</h3>
+      <p><code>data_engine/scripts/orchestrate.py</code> is the infrastructure-neutral conductor for one campaign: six HARD gates, each on its own 12 h clock, stopping the campaign with the failed rung named when a clock runs out (PRECHECK_FAILED / STAGE_FAILED): pre-checks (the delivered solve must succeed nominally, replay, and complete a 512-env batch with a success that replays; repair/vectorize sessions repeat until it does), then the ladder of exact nested trajectory sets 1 → 5 → 20 → 50 → 200 → 600 — scene / strategy / phase authoring stages each deliver <code>&lt;level&gt;_set.json</code> (the previous set whole plus a round-robin fill across that stage's cells, every kept cell contributing at least one replay-verified episode, byte-identical trajectories never counted twice, episodes counted only while their cell's code is unchanged), the dynamics stage (one base-cell noise certification, then harvest batches round-robin over the phase set's cells, each batch's successes replay-verified at once → <code>physics_set.json</code> of exactly 200), the visual stage (scene contracts, then a pass-major render queue of exactly 200 × 3 looks), status, and manifest. Cluster schedulers remain separate: they launch one orchestrator per task, supply an agent command, and persist the campaign directory. Batches are append-only and seeds/draw indices are explicit, so a campaign resumes from its own ledger and batch metadata.</p>
+
+    </section>
+
+
+
+
+
+
+
+
+
+  </main>
+
+</div>
+
+<script>
+  (function () {
+    var row = document.querySelector("nav.bar .row");
+    row.setAttribute("role", "tablist");
+    var links = Array.prototype.slice.call(document.querySelectorAll("nav.bar a"));
+    var ids = links.map(function (a) { return a.getAttribute("href").slice(1); });
+    links.forEach(function (a, i) {
+      a.setAttribute("role", "tab");
+      var panel = document.getElementById(ids[i]);
+      if (panel) { panel.setAttribute("role", "tabpanel"); panel.setAttribute("aria-label", a.textContent.trim()); }
+    });
+    function show(id, focus) {
+      ids.forEach(function (s) { var el = document.getElementById(s); if (el) el.hidden = (s !== id); });
+      links.forEach(function (a) {
+        var on = a.getAttribute("href") === "#" + id;
+        a.classList.toggle("on", on);
+        a.setAttribute("aria-selected", on ? "true" : "false");
+        a.setAttribute("tabindex", on ? "0" : "-1");
+        if (on && focus) a.focus();
+      });
+      try { history.replaceState(null, "", "#" + id); } catch (e) {}
+      window.scrollTo(0, 0);
+    }
+    Array.prototype.forEach.call(document.querySelectorAll("main a[href^='#']"), function (a) {
+      var id = a.getAttribute("href").slice(1);
+      if (ids.indexOf(id) >= 0) a.addEventListener("click", function (e) { e.preventDefault(); show(id); });
+    });
+    links.forEach(function (a, i) {
+      a.addEventListener("click", function (e) { e.preventDefault(); show(ids[i]); });
+      a.addEventListener("keydown", function (e) {
+        var d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (d) { e.preventDefault(); show(ids[(i + d + ids.length) % ids.length], true); }
+      });
+    });
+    var initial = (location.hash || "").slice(1);
+    show(ids.indexOf(initial) >= 0 ? initial : ids[0]);
+  })();
+</script>
+</html>
+
