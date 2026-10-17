@@ -10,6 +10,7 @@ Principle: no bundle ships unbooted.
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -103,6 +104,8 @@ os._exit(0)
             "PYTHONPATH": str(tree), "HOME": str(Path.home()), "PATH": "/usr/bin:/bin",
             "PYTHONDONTWRITEBYTECODE": "1",  # keep the validated tree byte-identical to its hash
             "OMNI_KIT_ACCEPT_EULA": "YES", "ACCEPT_EULA": "Y", "PRIVACY_CONSENT": "Y",
+            # local: libGLU is user-extracted (no sudo); without it pc_* scenes hang in build
+            **{k: os.environ[k] for k in ("LD_LIBRARY_PATH", "CUDA_VISIBLE_DEVICES") if os.environ.get(k)},
         },
         capture_output=True, text=True, timeout=600,
     )
