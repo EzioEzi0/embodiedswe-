@@ -14,12 +14,18 @@ Write-up: https://claude.ai/artifact/BBouMaaGPHUM5coNAAd6F8
 | `harness/run_agent_native.sh` | one Codex agent run inside the sandbox, budget + keep-going loop |
 | `harness/grade_native.sh` | official `eval/grader/grade.py --render`, offline, frames → mp4 |
 | `harness/diag_lift.py`, `harness/box_diag.sh` | diagnostic: dev (unseeded) vs grader (seed 0) initial conditions |
-| `validate_libglu.patch` | the only change to upstream: `eval/envbuild/validate.py` keeps `LD_LIBRARY_PATH` / `CUDA_VISIBLE_DEVICES` |
-| `UPSTREAM_COMMIT` | EmbodiedSWE commit the patch applies to |
+| `EmbodiedSWE/` | upstream [EmbodiedSWE](https://github.com/EmbodiedSWE/EmbodiedSWE) source at `046f7bf` (Apache-2.0), vendored with `git subtree --squash`, plus our one patch as a separate commit |
+| `validate_libglu.patch` | the only change to upstream: `eval/envbuild/validate.py` keeps `LD_LIBRARY_PATH` / `CUDA_VISIBLE_DEVICES` (already applied in `EmbodiedSWE/`) |
+| `UPSTREAM_COMMIT` | EmbodiedSWE commit the vendored copy and the patch correspond to |
 
-Large things stay on `/local1/ezioswangnlp/embodiedswe/` (home is nearly full):
+The vendored `EmbodiedSWE/` is source only. To run it, install the Isaac stack into it with
+`./scripts/bootstrap_isaaclab_5_1.sh` and fetch assets with `python -m robobench.scripts.fetch_assets`
+(both land in git-ignored paths). Pull a newer upstream with
+`git subtree pull --prefix EmbodiedSWE https://github.com/EmbodiedSWE/EmbodiedSWE.git main --squash`.
 
-- `EmbodiedSWE/` — upstream clone, `.venv` (Isaac Sim 5.1 / Isaac Lab 2.3.2, 19 GB), all assets
+The working install on pluslab02 lives on `/local1/ezioswangnlp/embodiedswe/` (home is nearly full):
+
+- `EmbodiedSWE/` — upstream clone with the same patch, `.venv` (Isaac Sim 5.1 / Isaac Lab 2.3.2, 19 GB), all assets
 - `EmbodiedSWE/experiments/<exp>/runs/<run>/` — task, workspace, submissions, grades
 - `syslibs/` — user-extracted `libGLU` (no sudo); `node_env/` — Node + Codex CLI
 - `videos_summary/` — result videos
